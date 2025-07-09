@@ -47,9 +47,9 @@ const spotProxyOptions = {
     console.log('Body:', JSON.stringify(req.body, null, 2));
     console.log('===================================');
 
-    // Handle JSON to Query transformation for GET requests
-    if (req.method === 'GET' && req.body && Object.keys(req.body).length > 0) {
-      console.log('Transforming GET request with JSON body to query parameters...');
+    // Transform POST requests to GET requests with query parameters
+    if (req.method === 'POST' && req.body && Object.keys(req.body).length > 0) {
+      console.log('Transforming POST request to GET request with query parameters...');
       
       // Convert JSON body to query parameters
       const queryParams = new URLSearchParams();
@@ -60,6 +60,9 @@ const spotProxyOptions = {
       const queryString = queryParams.toString();
       const originalPath = proxyReq.path;
       
+      // Change method to GET
+      proxyReq.method = 'GET';
+      
       // Append query parameters to proxy request path
       proxyReq.path = originalPath + (originalPath.includes('?') ? '&' : '?') + queryString;
       
@@ -67,10 +70,11 @@ const spotProxyOptions = {
       proxyReq.removeHeader('content-type');
       proxyReq.removeHeader('content-length');
       
-      console.log(`Transformed proxy path from ${originalPath} to ${proxyReq.path}`);
+      console.log(`Transformed POST to GET: ${originalPath} -> ${proxyReq.path}`);
     }
 
     console.log('=== Proxy Request ===');
+    console.log('Proxy request method:', proxyReq.method);
     console.log('Proxy request path:', proxyReq.path);
     console.log('Proxy request full URL:', `${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
     console.log('===================================');
@@ -102,9 +106,9 @@ const futuresProxyOptions = {
     console.log('Body:', JSON.stringify(req.body, null, 2));
     console.log('===================================');
 
-    // Handle JSON to Query transformation for GET requests
-    if (req.method === 'GET' && req.body && Object.keys(req.body).length > 0) {
-      console.log('Transforming GET request with JSON body to query parameters...');
+    // Transform POST requests to GET requests with query parameters
+    if (req.method === 'POST' && req.body && Object.keys(req.body).length > 0) {
+      console.log('Transforming POST request to GET request with query parameters...');
       
       // Convert JSON body to query parameters
       const queryParams = new URLSearchParams();
@@ -115,6 +119,9 @@ const futuresProxyOptions = {
       const queryString = queryParams.toString();
       const originalPath = proxyReq.path;
       
+      // Change method to GET
+      proxyReq.method = 'GET';
+      
       // Append query parameters to proxy request path
       proxyReq.path = originalPath + (originalPath.includes('?') ? '&' : '?') + queryString;
       
@@ -122,10 +129,11 @@ const futuresProxyOptions = {
       proxyReq.removeHeader('content-type');
       proxyReq.removeHeader('content-length');
       
-      console.log(`Transformed proxy path from ${originalPath} to ${proxyReq.path}`);
+      console.log(`Transformed POST to GET: ${originalPath} -> ${proxyReq.path}`);
     }
 
     console.log('=== Proxy Request ===');
+    console.log('Proxy request method:', proxyReq.method);
     console.log('Proxy request path:', proxyReq.path);
     console.log('Proxy request full URL:', `${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
     console.log('===================================');
