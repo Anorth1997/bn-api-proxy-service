@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: bn-api-proxy-service
+    env: node
+    region: singapore
+    plan: starter
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: BN_SPOT_API_BASE_URL
+        value: https://api.binance.com
+      - key: BN_FUTURES_API_BASE_URL
+        value: https://fapi.binance.com
