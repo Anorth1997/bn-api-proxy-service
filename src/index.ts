@@ -16,6 +16,9 @@ const BN_FUTURES_API_BASE_URL = process.env.BN_FUTURES_API_BASE_URL || 'https://
 app.use(helmet());
 app.use(cors());
 app.use(morgan('combined'));
+app.use(express.json());
+
+// JSON to Query transformation will be handled in onProxyReq
 
 app.get('/health', (_, res) => {
   res.json({ 
@@ -35,8 +38,48 @@ const spotProxyOptions = {
     console.error('Spot API Proxy Error:', err.message);
     res.status(500).json({ error: 'Proxy error', message: err.message });
   },
-  onProxyReq: (_: any, req: express.Request) => {
-    console.log(`Proxying spot request: ${req.method} ${req.url} -> ${BN_SPOT_API_BASE_URL}${req.url}`);
+  onProxyReq: (proxyReq: any, req: express.Request) => {
+    console.log('=== Original Request ===');
+    console.log(`Original URL: ${req.url}`);
+    console.log(`Method: ${req.method}`);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Query params:', req.query);
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('===================================');
+
+    // Handle JSON to Query transformation for GET requests
+    if (req.method === 'GET' && req.body && Object.keys(req.body).length > 0) {
+      console.log('Transforming GET request with JSON body to query parameters...');
+      
+      // Convert JSON body to query parameters
+      const queryParams = new URLSearchParams();
+      Object.entries(req.body).forEach(([key, value]) => {
+        queryParams.set(key, String(value));
+      });
+      
+      const queryString = queryParams.toString();
+      const originalPath = proxyReq.path;
+      
+      // Append query parameters to proxy request path
+      proxyReq.path = originalPath + (originalPath.includes('?') ? '&' : '?') + queryString;
+      
+      // Remove content-related headers for GET requests
+      proxyReq.removeHeader('content-type');
+      proxyReq.removeHeader('content-length');
+      
+      console.log(`Transformed proxy path from ${originalPath} to ${proxyReq.path}`);
+    }
+
+    console.log('=== Proxy Request ===');
+    console.log('Proxy request path:', proxyReq.path);
+    console.log('Proxy request full URL:', `${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
+    console.log('===================================');
+  },
+  onProxyRes: (proxyRes: any, _: express.Request) => {
+    console.log('=== DETAILED PROXY RESPONSE DEBUG ===');
+    console.log(`Status: ${proxyRes.statusCode}`);
+    console.log(`Status Message: ${proxyRes.statusMessage}`);
+    console.log('====================================');
   }
 };
 
@@ -50,8 +93,48 @@ const futuresProxyOptions = {
     console.error('Futures API Proxy Error:', err.message);
     res.status(500).json({ error: 'Proxy error', message: err.message });
   },
-  onProxyReq: (_: any, req: express.Request) => {
-    console.log(`Proxying futures request: ${req.method} ${req.url} -> ${BN_FUTURES_API_BASE_URL}${req.url}`);
+  onProxyReq: (proxyReq: any, req: express.Request) => {
+    console.log('=== Original Request ===');
+    console.log(`Original URL: ${req.url}`);
+    console.log(`Method: ${req.method}`);
+    console.log('Headers:', JSON.stringify(req.headers, null, 2));
+    console.log('Query params:', req.query);
+    console.log('Body:', JSON.stringify(req.body, null, 2));
+    console.log('===================================');
+
+    // Handle JSON to Query transformation for GET requests
+    if (req.method === 'GET' && req.body && Object.keys(req.body).length > 0) {
+      console.log('Transforming GET request with JSON body to query parameters...');
+      
+      // Convert JSON body to query parameters
+      const queryParams = new URLSearchParams();
+      Object.entries(req.body).forEach(([key, value]) => {
+        queryParams.set(key, String(value));
+      });
+      
+      const queryString = queryParams.toString();
+      const originalPath = proxyReq.path;
+      
+      // Append query parameters to proxy request path
+      proxyReq.path = originalPath + (originalPath.includes('?') ? '&' : '?') + queryString;
+      
+      // Remove content-related headers for GET requests
+      proxyReq.removeHeader('content-type');
+      proxyReq.removeHeader('content-length');
+      
+      console.log(`Transformed proxy path from ${originalPath} to ${proxyReq.path}`);
+    }
+
+    console.log('=== Proxy Request ===');
+    console.log('Proxy request path:', proxyReq.path);
+    console.log('Proxy request full URL:', `${proxyReq.protocol}//${proxyReq.host}${proxyReq.path}`);
+    console.log('===================================');
+  },
+  onProxyRes: (proxyRes: any, _: express.Request) => {
+    console.log('=== DETAILED FUTURES PROXY RESPONSE DEBUG ===');
+    console.log(`Status: ${proxyRes.statusCode}`);
+    console.log(`Status Message: ${proxyRes.statusMessage}`);
+    console.log('=============================================');
   }
 };
 

@@ -5,6 +5,7 @@ A high-performance Node.js TypeScript proxy service that forwards requests to Bi
 ## 🚀 Features
 
 - **Dual API Support**: Proxies both Binance Spot/Margin and UM Futures APIs
+- **JSON to URL Parameters**: Automatically converts JSON payloads to URL parameters for GET requests
 - **High Performance**: Built with Express.js and optimized for low latency
 - **Security**: Includes CORS, Helmet, and request logging
 - **Health Monitoring**: Built-in health check endpoint
@@ -24,9 +25,16 @@ GET|POST /api/v3/*
 ```
 Forwards requests to `https://api.binance.com/api/v3/*`
 
-**Example:**
+**Traditional URL Parameters:**
 ```bash
 curl https://your-service.onrender.com/api/v3/ticker/price?symbol=BTCUSDT
+```
+
+**JSON Payload (GET only):**
+```bash
+curl -X GET https://your-service.onrender.com/api/v3/ticker/price \
+  -H "Content-Type: application/json" \
+  -d '{"symbol": "BTCUSDT"}'
 ```
 
 ### Binance UM Futures API Proxy
@@ -35,9 +43,16 @@ GET|POST /fapi/v1/*
 ```
 Forwards requests to `https://fapi.binance.com/fapi/v1/*`
 
-**Example:**
+**Traditional URL Parameters:**
 ```bash
 curl https://your-service.onrender.com/fapi/v1/ticker/price?symbol=BTCUSDT
+```
+
+**JSON Payload (GET only):**
+```bash
+curl -X GET https://your-service.onrender.com/fapi/v1/ticker/price \
+  -H "Content-Type: application/json" \
+  -d '{"symbol": "BTCUSDT"}'
 ```
 
 ## 🛠️ Development
@@ -112,6 +127,30 @@ NODE_ENV=production
 The service automatically routes requests based on URL patterns:
 - `/api/*` → Binance Spot/Margin API
 - `/fapi/*` → Binance UM Futures API
+
+### JSON to URL Parameters Transformation
+For GET requests only, the service automatically converts JSON payloads to URL parameters:
+
+**Input:**
+```json
+GET /api/v3/ticker/price
+Content-Type: application/json
+{
+  "symbol": "BTCUSDT",
+  "interval": "1h"
+}
+```
+
+**Transformed to:**
+```
+GET /api/v3/ticker/price?symbol=BTCUSDT&interval=1h
+```
+
+**Key Features:**
+- Only applies to GET requests
+- Existing URL parameters are ignored (JSON payload takes precedence)
+- Works for both `/api` and `/fapi` endpoints
+- Transformation is logged for debugging
 
 ### CORS
 CORS is enabled for all origins. Modify `src/index.ts` to restrict origins in production if needed.
