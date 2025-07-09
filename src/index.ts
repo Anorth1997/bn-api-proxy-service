@@ -17,7 +17,7 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan('combined'));
 
-app.get('/health', (req, res) => {
+app.get('/health', (_, res) => {
   res.json({ 
     status: 'ok', 
     timestamp: new Date().toISOString(),
@@ -31,11 +31,11 @@ const spotProxyOptions = {
   pathRewrite: {
     '^/api': '/api'
   },
-  onError: (err: Error, req: express.Request, res: express.Response) => {
+  onError: (err: Error, _: express.Request, res: express.Response) => {
     console.error('Spot API Proxy Error:', err.message);
     res.status(500).json({ error: 'Proxy error', message: err.message });
   },
-  onProxyReq: (proxyReq: any, req: express.Request) => {
+  onProxyReq: (_: any, req: express.Request) => {
     console.log(`Proxying spot request: ${req.method} ${req.url} -> ${BN_SPOT_API_BASE_URL}${req.url}`);
   }
 };
@@ -46,11 +46,11 @@ const futuresProxyOptions = {
   pathRewrite: {
     '^/fapi': '/fapi'
   },
-  onError: (err: Error, req: express.Request, res: express.Response) => {
+  onError: (err: Error, _: express.Request, res: express.Response) => {
     console.error('Futures API Proxy Error:', err.message);
     res.status(500).json({ error: 'Proxy error', message: err.message });
   },
-  onProxyReq: (proxyReq: any, req: express.Request) => {
+  onProxyReq: (_: any, req: express.Request) => {
     console.log(`Proxying futures request: ${req.method} ${req.url} -> ${BN_FUTURES_API_BASE_URL}${req.url}`);
   }
 };
@@ -58,7 +58,7 @@ const futuresProxyOptions = {
 app.use('/api', createProxyMiddleware(spotProxyOptions));
 app.use('/fapi', createProxyMiddleware(futuresProxyOptions));
 
-app.use('*', (req, res) => {
+app.use('*', (_, res) => {
   res.status(404).json({ 
     error: 'Not Found', 
     message: 'Use /api/v3/* for spot/margin API or /fapi/v1/* for futures API'
